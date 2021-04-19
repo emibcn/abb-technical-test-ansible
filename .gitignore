@@ -1,0 +1,9 @@
+# Editors
+.*.swp
+*~
+
+# Credentials
+credentials/
+
+# Ansible's docker known_hosts
+known_hosts

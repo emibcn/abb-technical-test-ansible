@@ -1,0 +1,5 @@
+---
+- name: "restart {{ dm }} service"
+  service:
+    name: "{{ dm }}"
+    state: restarted

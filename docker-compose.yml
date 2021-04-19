@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+
+  ansible:
+    build: .
+    volumes:
+      # Mount host's id_rsa to allow connection to the server
+      - $HOME/.ssh/id_rsa:/root/.ssh/id_rsa:ro
+      # Mount known_hosts to only accept once the server's fingerprint
+      - ./known_hosts:/root/.ssh/known_hosts
+      # Mount ansible configuration files
+      - ./ansible:/ansible
+      # Ensure it uses the same timezone than the host
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro

@@ -1,0 +1,29 @@
+# Where to save all docker-compose files
+dest_grafana: /grafana
+
+# The repository where the test script is located
+repo_test_script: https://github.com/emibcn/abb-technical-test-script.git
+# Where to save the test script
+dest_test_script: /usr/local/bin
+# The name of the test script
+test_script: test-script.sh
+
+# The repository where the Grafana stack docker-compose is located
+repo_grafana_dockercompose: https://github.com/emibcn/abb-technical-test-grafana.git
+
+# The name where the test script will output its results
+metrics_file: "metrics.out"
+# The full path of ^
+metrics: "{{ dest_grafana }}/{{ metrics_file }}"
+
+# Credentials
+# We use files to store plaintext passwords. This is not optimal: it would be
+# better to use Ansible Vault or some other external credentials provider.
+# But, this way, passwords are created automatically in the hosts running Ansible.
+grafana_username: admin
+grafana_password: "{{ lookup('password', 'credentials/grafana.{{ inventory_hostname }} chars=ascii_letters,digits') }}"
+influxdb_admin_username: influxadmin
+influxdb_admin_password: "{{ lookup('password', 'credentials/influxdb_admin.{{ inventory_hostname }} chars=ascii_letters,digits') }}"
+influxdb_read_username: influxreader
+influxdb_read_password: "{{ lookup('password', 'credentials/influxdb_read.{{ inventory_hostname }} chars=ascii_letters,digits') }}"
+influxdb_db: db0

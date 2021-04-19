@@ -1,0 +1,9 @@
+---
+- hosts: servers
+  remote_user: root
+  roles:
+  - x
+  - git
+  - chromium
+  - docker
+  - grafana

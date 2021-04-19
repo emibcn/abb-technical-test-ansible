@@ -1,0 +1,21 @@
+---
+- name: "Install {{ wm }}"
+  notify: "restart {{ dm }} service"
+  apt:
+    name:
+      - "{{ wm }}"
+      - "{{ dm }}"
+    state: latest
+    update_cache: yes
+  tags:
+    - wm
+    - x
+
+- name: Change default systemd target to graphical.target
+  file:
+    src: /lib/systemd/system/graphical.target
+    dest: /etc/systemd/system/default.target
+    state: link
+  tags:
+    - wm
+    - x

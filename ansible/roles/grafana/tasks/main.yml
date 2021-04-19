@@ -1,0 +1,91 @@
+---
+# Install InfluxDB/Telegraf/Grafana (and run) using docker-compose in server
+- name: Ensure rsync is installed
+  apt:
+    name: rsync
+  tags:
+    - grafana
+
+- name: "Clone the Grafana stack docker-compose from configured repository {{ repo_grafana_dockercompose }}"
+  ansible.builtin.git:
+    repo: "{{ repo_grafana_dockercompose }}"
+    dest: "/tmp/grafana/"
+  tags:
+    - grafana
+
+- name: Synchronize (and delete if needed) InfluxDB/Telegraf/Grafana files
+  synchronize:
+    src: "/tmp/grafana/"
+    dest: "{{ dest_grafana }}"
+    delete: yes
+    recursive: yes
+    owner: false
+    group: false
+    # These excludes prevent from copying these files, but also
+    # from deleting them in the dest host
+    rsync_opts:
+      - "--exclude={{ metrics_file }}"
+      - "--exclude=.env"
+      - "--exclude=.git"
+      - "--exclude=.*.swp"
+  delegate_to: "{{ inventory_hostname }}"
+  tags:
+    - grafana
+
+- name: "Clone the test script from configured repository {{ repo_test_script }}"
+  ansible.builtin.git:
+    repo: "{{ repo_test_script }}"
+    dest: "/tmp/test-script/"
+  tags:
+    - grafana
+
+- name: "Copy the test script to its destination path {{ dest_test_script }}/{{ test_script }}"
+  copy:
+    remote_src: yes
+    src: "/tmp/test-script/{{ test_script }}"
+    dest: "{{ dest_test_script }}/{{ test_script }}"
+    mode: 0755
+    owner: root
+    group: root
+  tags:
+    - grafana
+
+- name: Ensure the metrics file {{ metrics }} exists
+  ansible.builtin.file:
+    path: "{{ metrics }}"
+    state: touch
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+    modification_time: preserve
+    access_time: preserve
+  tags:
+    - grafana
+
+- name: Ensure the test script is run in cron every minute
+  ansible.builtin.cron:
+    name: "test script"
+    job: "{{ dest_test_script }}/{{ test_script }} > {{ metrics }}"
+  tags:
+    - grafana
+
+- name: Create env file with credentials
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ dest_grafana }}/.env"
+    owner: root
+    group: root
+    mode: '0600'
+  tags:
+    - grafana
+
+- name: Create and start services
+  command: docker-compose --project-directory "{{ dest_grafana }}" up -d --build
+  register: output
+  tags:
+    - grafana
+
+- ansible.builtin.debug:
+    var: output
+  tags:
+    - grafana

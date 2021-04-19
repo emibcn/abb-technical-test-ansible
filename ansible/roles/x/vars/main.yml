@@ -1,0 +1,6 @@
+---
+# Define the Window Manager to install
+wm: xfce4
+
+# Define the display manager (login screen) to install
+dm: gdm3
